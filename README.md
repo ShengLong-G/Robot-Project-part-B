@@ -1,12 +1,12 @@
 # Robot-Project-part-B
 Analysis of Jeremy's mobility parameters using base servos and wheels
 
-# TOP SPEED #
+TOP SPEED
 
-# ACCELERATION #
+ACCELERATION
 
-# BRAKING DISTANCE #
+BRAKING DISTANCE
 
-# PULSE/DEGREE RATIO (TURNING) #
+PULSE/DEGREE RATIO (TURNING)
 
 # NOTES #
