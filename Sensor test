@@ -5,6 +5,12 @@
 * www.HowToMechatronics.com
 *
 */
+
+#include <Servo.h>                           // Include servo library
+ 
+Servo servoLeft;                             // Declare left and right servos
+Servo servoRight;
+ 
 // defines pins numbers
 const int trigPin = 9;
 const int echoPin = 10;
@@ -30,7 +36,30 @@ digitalWrite(trigPin, LOW);
 duration = pulseIn(echoPin, HIGH);
 // Calculating the distance
 distance= duration*0.034/2;
-// Prints the distance on the Serial Monitor
+for (int i = 0; i < 1000000000; i++)
+{
+  if (distance =< 9) 
+  {
+  servoLeft.writeMicroseconds(1700);
+  servoRight.writeMicrosecond(1500);
+  }
+  else {
+  servoLeft.attach(13);                      // Attach left signal to pin 13
+  servoRight.attach(12);                     // Attach right signal to pin 12
+
+  // Full speed forward
+  servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
+  servoRight.writeMicroseconds(1300);        // Right wheel clockwise
+  delay(3000);                               // ...for 3 seconds
+ 
+  servoLeft.detach();                        // Stop sending servo signals
+  servoRight.detach();
+  }
+  
+}
+
+/* Prints the distance on the Serial Monitor
 Serial.print("Distance: ");
 Serial.println(distance);
+*/
 }
