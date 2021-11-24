@@ -17,7 +17,7 @@ const int echoPin = 10;
 // defines variables
 long duration;
 int distance;
-
+int j;
 void setup() {
 pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
 pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -36,30 +36,31 @@ digitalWrite(trigPin, LOW);
 duration = pulseIn(echoPin, HIGH);
 // Calculating the distance
 distance= duration*0.034/2;
-for (int i = 0; i < 1000000000; i++)
-{
-  if (distance =< 9) 
-  {
-  servoLeft.writeMicroseconds(1700);
-  servoRight.writeMicrosecond(1500);
-  }
-  else {
-  servoLeft.attach(13);                      // Attach left signal to pin 13
-  servoRight.attach(12);                     // Attach right signal to pin 12
+servoLeft.attach(13);                      // Attach left signal to pin 13
+servoRight.attach(12);                     // Attach right signal to pin 12
+ 
 
-  // Full speed forward
+
+  if (distance >= '3') 
+  {
+    // Full speed forward
+  j == 0;
   servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
   servoRight.writeMicroseconds(1300);        // Right wheel clockwise
-  delay(3000);                               // ...for 3 seconds
- 
-  servoLeft.detach();                        // Stop sending servo signals
-  servoRight.detach();
-  }
-  
-}
+  delay(4000);   
+                                     // ...for 3 seconds
 
-/* Prints the distance on the Serial Monitor
-Serial.print("Distance: ");
+  }
+  else {
+    j += 1;
+  if (j >= '2'){
+  servoLeft.writeMicroseconds(1700);
+  servoRight.writeMicroseconds(1500);
+  delay(1000);        
+  }}}
+  
+
+/* Prints the distance on the Serial Monitor 
+ *  Serial.print("Distance: ");
 Serial.println(distance);
 */
-}
