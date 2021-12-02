@@ -1,0 +1,93 @@
+/*
+* Ultrasonic Sensor HC-SR04 and Arduino Tutorial
+*
+* by Dejan Nedelkovski,
+* www.HowToMechatronics.com
+*
+*/
+
+#include <Servo.h>                           // Include servo library
+ 
+Servo servoLeft;                             // Declare left and right servos
+Servo servoRight;
+ 
+// defines pins numbers where sensor is attached
+const int trigPinLEFT = 5;
+const int echoPinLEFT = 6;
+const int trigPinRIGHT = 9;
+const int echoPinRIGHT = 10;
+// defines variables
+long durationLEFT;
+long durationRIGHT;
+int distanceLEFT;
+int distanceRIGHT;
+int j, k;
+void setup() {
+pinMode(trigPinLEFT, OUTPUT); // Sets the trigPin as an Output
+pinMode(echoPinLEFT, INPUT); // Sets the echoPin as an Input
+pinMode(trigPinRIGHT, OUTPUT); // Sets the trigPin as an Output
+pinMode(echoPinRIGHT, INPUT); // Sets the echoPin as an Input
+Serial.begin(9600); // Starts the serial communication
+}
+
+void loop() {
+digitalWrite(trigPinLEFT, LOW);   // Clears the trigPin
+delayMicroseconds(2);
+
+digitalWrite(trigPinLEFT, HIGH);  // Sets the trigPin on HIGH state for 10 micro seconds
+delayMicroseconds(10);
+digitalWrite(trigPinLEFT, LOW);
+
+durationLEFT = pulseIn(echoPinLEFT, HIGH);  // Reads the echoPin, returns the sound wave travel time in microseconds
+
+distanceLEFT = durationLEFT*0.034/2;  // Calculating the distance
+servoRight.attach(12);                     // Attach right signal to pin 12
+ 
+// Clears the trigPin
+digitalWrite(trigPinRIGHT, LOW);
+delayMicroseconds(2);
+
+digitalWrite(trigPinRIGHT, HIGH);// Sets the trigPin on HIGH state for 10 micro seconds
+delayMicroseconds(10);
+digitalWrite(trigPinRIGHT, LOW);
+
+durationRIGHT = pulseIn(echoPinRIGHT, HIGH);  // Reads the echoPin, returns the sound wave travel time in microseconds
+// Calculating the distance
+distanceRIGHT= durationRIGHT*0.034/2;
+servoLeft.attach(13);                      // Attach left signal to pin 13
+//Prints the distance on the Serial Monitor 
+ Serial.print("Distance: ");
+  Serial.println(distanceRIGHT);
+  if (distanceLEFT > '3' && distanceRIGHT > '3') 
+  {
+    // Full speed forward
+  j == 0;
+  k == 0;
+  servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
+  servoRight.writeMicroseconds(1300);        // Right wheel clockwise
+  delay(1000);   
+                                    
+
+  }
+  else if (distanceLEFT <= '3') {
+   /* j += 1;
+  if (j >= '2'){*/
+  
+  servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
+ servoRight.writeMicroseconds(1700); // Right wheel counterclockwise
+  delay(300);   
+  j == 0;     
+  }
+   else  (distanceRIGHT <= '3'); {
+    k += 1;
+  /*if (k >= '2'){*/
+  
+  servoLeft.writeMicroseconds(1300);   // Left wheel counterclockwise
+ servoRight.writeMicroseconds(1300); // Right wheel counterclockwise
+  delay(300);   
+  k == 0;     
+  }
+  }
+  
+   
+
