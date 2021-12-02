@@ -41,23 +41,24 @@ servoRight.attach(12);                     // Attach right signal to pin 12
  
 
 
-  if (distance >= '3') 
+  if (distance > '2') 
   {
     // Full speed forward
-  j == 0;
+  /*j == 0;*/
   servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
   servoRight.writeMicroseconds(1300);        // Right wheel clockwise
-  delay(4000);   
+  delay(1000);   
                                      // ...for 3 seconds
 
   }
   else {
-    j += 1;
-  if (j >= '2'){
+    /*j += 1;
+  if (j >= '9'){*/
+  delay(2000);
   servoLeft.writeMicroseconds(1700);
   servoRight.writeMicroseconds(1500);
   delay(1000);        
-  }}}
+  }}
   
 
 /* Prints the distance on the Serial Monitor 
