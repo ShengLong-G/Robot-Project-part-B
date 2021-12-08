@@ -1,10 +1,14 @@
 /*
-* Ultrasonic Sensor HC-SR04 and Arduino Tutorial
+*  References:
+*     Ultrasonic Sensor HC-SR04 and Arduino Tutorial
+*     by Dejan Nedelkovski,
+*     https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 *
-* by Dejan Nedelkovski,
-* www.HowToMechatronics.com
-*
+*     Multiple Ultrasonic Sensor With Arduino
+*     by Syed Zain Nasir,
+*     https://www.theengineeringprojects.com/2015/02/interfacing-multiple-ultrasonic-sensor-arduino.html
 */
+
 
 #include <Servo.h>                           // Include servo library
  
@@ -31,63 +35,64 @@ Serial.begin(9600); // Starts the serial communication
 }
 
 void loop() {
-digitalWrite(trigPinLEFT, LOW);   // Clears the trigPin
-delayMicroseconds(2);
+SonarSensor(trigPinLeft, echoPinLeft);
+distanceLeft = distance;
 
-digitalWrite(trigPinLEFT, HIGH);  // Sets the trigPin on HIGH state for 10 micro seconds
-delayMicroseconds(10);
-digitalWrite(trigPinLEFT, LOW);
+servoRight.attach(12);  // Attach right signal to pin 12
 
-durationLEFT = pulseIn(echoPinLEFT, HIGH);  // Reads the echoPin, returns the sound wave travel time in microseconds
+SonarSensor(trigPinRight, echoPinRight);
+distanceRight = distance;
 
-distanceLEFT = durationLEFT*0.034/2;  // Calculating the distance
-servoRight.attach(12);                     // Attach right signal to pin 12
- 
-// Clears the trigPin
-digitalWrite(trigPinRIGHT, LOW);
-delayMicroseconds(2);
+servoLeft.attach(13);   // Attach left signal to pin 13
 
-digitalWrite(trigPinRIGHT, HIGH);// Sets the trigPin on HIGH state for 10 micro seconds
-delayMicroseconds(10);
-digitalWrite(trigPinRIGHT, LOW);
-
-durationRIGHT = pulseIn(echoPinRIGHT, HIGH);  // Reads the echoPin, returns the sound wave travel time in microseconds
-// Calculating the distance
-distanceRIGHT= durationRIGHT*0.034/2;
-servoLeft.attach(13);                      // Attach left signal to pin 13
+/*
 //Prints the distance on the Serial Monitor 
- Serial.print("Distance: ");
-  Serial.println(distanceRIGHT);
-  if (distanceLEFT > '3' && distanceRIGHT > '3') 
-  {
-    // Full speed forward
-  j == 0;
-  k == 0;
-  servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
-  servoRight.writeMicroseconds(1300);        // Right wheel clockwise
-  delay(1000);   
-                                    
+Serial.print("Distance: ");
+Serial.println(distanceRIGHT);
+*/
 
-  }
+  if (distanceLEFT > '3' && distanceRIGHT > '3') 
+   {
+    // Full speed forward
+    j == 0;
+    k == 0;
+    servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
+    servoRight.writeMicroseconds(1300);        // Right wheel clockwise
+    delay(1000);  
+   }
   else if (distanceLEFT <= '3') {
    /* j += 1;
   if (j >= '2'){*/
   
-  servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
- servoRight.writeMicroseconds(1700); // Right wheel counterclockwise
-  delay(300);   
-  j == 0;     
+   servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
+   servoRight.writeMicroseconds(1700); // Right wheel counterclockwise
+   delay(300);   
+   j == 0;     
   }
    else  (distanceRIGHT <= '3'); {
     k += 1;
   /*if (k >= '2'){*/
   
-  servoLeft.writeMicroseconds(1300);   // Left wheel counterclockwise
- servoRight.writeMicroseconds(1300); // Right wheel counterclockwise
-  delay(300);   
-  k == 0;     
+   servoLeft.writeMicroseconds(1300);   // Left wheel counterclockwise
+   servoRight.writeMicroseconds(1300); // Right wheel counterclockwise
+   delay(300);   
+   k == 0;     
   }
-  }
+ }
+ 
+
+void SonarSensor(int trigPin,int echoPin)
+{
+digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);
+duration = pulseIn(echoPin, HIGH);
+distance = duration*0.034/2;
+//distance = (duration/2) / 29.1;
+
+}
   
    
 
