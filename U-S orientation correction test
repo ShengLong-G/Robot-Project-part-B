@@ -21,8 +21,8 @@ const int echoPinLEFT = 6;
 const int trigPinRIGHT = 9;
 const int echoPinRIGHT = 10;
 // defines variables
-long durationLEFT;
-long durationRIGHT;
+long duration;
+long distance;
 int distanceLEFT;
 int distanceRIGHT;
 int j, k;
@@ -35,13 +35,13 @@ Serial.begin(9600); // Starts the serial communication
 }
 
 void loop() {
-SonarSensor(trigPinLeft, echoPinLeft);
-distanceLeft = distance;
+SonarSensor(trigPinLEFT, echoPinLEFT);
+distanceLEFT = distance;
 
 servoRight.attach(12);  // Attach right signal to pin 12
 
-SonarSensor(trigPinRight, echoPinRight);
-distanceRight = distance;
+SonarSensor(trigPinRIGHT, echoPinRIGHT);
+distanceRIGHT = distance;
 
 servoLeft.attach(13);   // Attach left signal to pin 13
 
