@@ -3,7 +3,7 @@
 *
 * by Dejan Nedelkovski,
 * www.HowToMechatronics.com
-*
+* https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 */
 
 #include <Servo.h>                           // Include servo library
