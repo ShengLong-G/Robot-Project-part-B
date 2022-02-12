@@ -1,0 +1,19 @@
+variables{
+        5 input sensors
+        7 input neurons
+        5 outputs
+        individual weights    // initial weight
+        weighted sum
+        output
+        }
+functions{
+        bias
+        random Seed
+        weighted sum
+        training function
+        learning function
+        load function
+        output function     // turning
+        
+}        
+      
