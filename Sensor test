@@ -1,67 +1,48 @@
-/*
-* Ultrasonic Sensor HC-SR04 and Arduino Tutorial
-*
-* by Dejan Nedelkovski,
-* www.HowToMechatronics.com
-* https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
-*/
+// https://learn.parallax.com/tutorials/robot/shield-bot/robotics-board-education-shield-arduino/chapter-4-boe-shield-bot-14
 
-#include <Servo.h>                           // Include servo library
- 
-Servo servoLeft;                             // Declare left and right servos
-Servo servoRight;
- 
-// defines pins numbers
-const int trigPin = 9;
-const int echoPin = 10;
+// defines pins numbers where sensor is attached
+const int trigPinLEFT = 5;
+const int echoPinLEFT = 6;
+const int trigPinRIGHT = 9;
+const int echoPinRIGHT = 10;
+
 // defines variables
-long duration;
-int distance;
-int j;
+long duration, distance, distanceLEFT, distanceRIGHT;
+
+
 void setup() {
-pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-pinMode(echoPin, INPUT); // Sets the echoPin as an Input
-Serial.begin(9600); // Starts the serial communication
+  // put your setup code here, to run once:
+   pinMode(trigPinLEFT, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPinLEFT, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPinRIGHT, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPinRIGHT, INPUT); // Sets the echoPin as an Input
+  Serial.begin(9600); // Starts the serial communication
 }
 
 void loop() {
-// Clears the trigPin
-digitalWrite(trigPin, LOW);
-delayMicroseconds(2);
-// Sets the trigPin on HIGH state for 10 micro seconds
-digitalWrite(trigPin, HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPin, LOW);
-// Reads the echoPin, returns the sound wave travel time in microseconds
-duration = pulseIn(echoPin, HIGH);
-// Calculating the distance
-distance= duration*0.034/2;
-servoLeft.attach(13);                      // Attach left signal to pin 13
-servoRight.attach(12);                     // Attach right signal to pin 12
- 
+  // put your main code here, to run repeatedly:
+  SonarSensor(trigPinLEFT, echoPinLEFT);
+  distanceLEFT = distance;
 
+   SonarSensor(trigPinRIGHT, echoPinRIGHT);
+  distanceRIGHT = distance;
 
-  if (distance > '2') 
-  {
-    // Full speed forward
-  /*j == 0;*/
-  servoLeft.writeMicroseconds(1700);         // Left wheel counterclockwise
-  servoRight.writeMicroseconds(1300);        // Right wheel clockwise
-  delay(1000);   
-                                     // ...for 3 seconds
+  //Prints the distance on the Serial Monitor 
+  //Serial.print("DistanceRight: ");
+  //Serial.println(distanceRIGHT);
+  Serial.print("DistanceLEFT: ");
+  Serial.println(distanceLEFT);
+}
 
-  }
-  else {
-    /*j += 1;
-  if (j >= '9'){*/
-  delay(2000);
-  servoLeft.writeMicroseconds(1700);
-  servoRight.writeMicroseconds(1500);
-  delay(1000);        
-  }}
-  
+void SonarSensor(int trigPin,int echoPin)
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration*0.034/2;
+  //distance = (duration/2) / 29.1;
 
-/* Prints the distance on the Serial Monitor 
- *  Serial.print("Distance: ");
-Serial.println(distance);
-*/
+}
