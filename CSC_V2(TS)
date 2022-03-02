@@ -8,7 +8,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "Adafruit_VL6180X.h"
+#include <Adafruit_VL6180X.h>
 
 // Setup the lidar -------------------------------------------------------
 Adafruit_VL6180X vl = Adafruit_VL6180X();
@@ -136,13 +136,13 @@ void WallFollower(uint8_t distanceFront)
   delay(10);
 
   if ((distanceFront < 90) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
-    servoLeft.writeMicroseconds(1415);      // L-cw
-    servoRight.writeMicroseconds(1415);     // R-cw
+    servoLeft.writeMicroseconds(1425);      // L-cw
+    servoRight.writeMicroseconds(1425);     // R-cw
     delay(580);
   }
   else if ((distanceFront < 90) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
-    servoLeft.writeMicroseconds(1585);      // L-ccw
-    servoRight.writeMicroseconds(1585);     // R-ccw
+    servoLeft.writeMicroseconds(1565);      // L-ccw
+    servoRight.writeMicroseconds(1565);     // R-ccw
     delay(580);
   }
   else if ((distanceFront > 110)){     // Continue straight on
