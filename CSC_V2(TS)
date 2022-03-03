@@ -96,14 +96,8 @@ void loop()
 
    while ((distanceLEFT < 50) || (distanceRIGHT < 50) || (distanceFront < 256)){
     WallFollower(distanceFront);
-    TL(distanceFront);
+    
   }
-
-  /*
-  while ((distanceLEFT < 50) || (distanceRIGHT < 50) || (distanceFront < 200)){
-    WallFollower(distanceFront);
-    RL(distanceFront);
-  }*/
   
 }
 
@@ -135,9 +129,11 @@ void WallFollower(uint8_t distanceFront)
   servoRight.writeMicroseconds(1300);     // R-cw
   delay(10);
 
+  TR(distanceFront);
+  
   if ((distanceFront < 90) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
-    servoLeft.writeMicroseconds(1425);      // L-cw
-    servoRight.writeMicroseconds(1425);     // R-cw
+    servoLeft.writeMicroseconds(1435);      // L-cw
+    servoRight.writeMicroseconds(1435);     // R-cw
     delay(580);
   }
   else if ((distanceFront < 90) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
@@ -164,11 +160,11 @@ void WallFollower(uint8_t distanceFront)
 // Turn left at T junction------------------------------------------------
 
 void TL(uint8_t distanceFront) {
-  if ((distanceFront < 6) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
+  if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
     
       servoLeft.writeMicroseconds(1420);         // Left wheel clockwise
       servoRight.writeMicroseconds(1420);        // Right wheel anticlockwise
-      delay(50);
+      delay(580);
   }
 }
 
@@ -176,11 +172,11 @@ void TL(uint8_t distanceFront) {
 // Turn right at T junction-----------------------------------------------
 
 void TR(uint8_t distanceFront) {
-  if ((distanceFront < 6) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
+  if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
     
       servoRight.writeMicroseconds(1580);         // Right wheel clockwise
       servoLeft.writeMicroseconds(1580);          // Left wheel anticlockwise
-      delay(50);
+      delay(580);
   }
 }
 
