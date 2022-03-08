@@ -93,7 +93,8 @@ void loop()
   servoLeft.write(180);*/
   delay(560);
 
-
+   byte trial = 0;  //Comment out if causing issues
+   int t_time[3];  // ''
    while ((distanceLEFT < 50) || (distanceRIGHT < 50) || (distanceFront < 256)){
     WallFollower(distanceFront);
     
@@ -114,6 +115,37 @@ void SonarSensor(int trigPin,int echoPin)
   duration = pulseIn(echoPin, HIGH);
   distance = duration*0.034/2;
   //distance = (duration/2) / 29.1;
+}
+
+// Run Logger function (NEW FUNCTION, COMMENT OUT IF ERROR)
+void RLog(uint8_t distanceFront, byte trial, int t_time)
+{
+  bool Start = false;
+  bool End = false;
+  int runtime = 0;
+  servoLeft.writeMicroseconds(1700);      // Move forwards to try enter maze
+  servoRight.writeMicroseconds(1300);     
+  delay(100);
+  if ((distanceFront > 110) &&  (distanceLEFT < 50) && (distanceRIGHT < 50)){
+    Start = true;
+  }
+  while ((Start = true) && (End = false)){
+    runtime += 1;
+    WallFollower(distanceFront);
+    if ((distanceFront > 110) &&  (distanceLEFT < 50) && (distanceRIGHT < 50) && (runtime > 2)){
+      End = true;
+    }
+  }
+  if ((End = true) && (trial < 3)){
+    t_time[trial]= runtime;
+    trial += 1;
+    delay (10000);
+    Start = false;
+    RLog(distanceFront, trial, t_time);
+  }
+  else if ((End = true) && (trial = 3)){
+    t_time[trial]= runtime;
+  }
 }
 
 // Wall following function
