@@ -39,6 +39,8 @@ const int echoPinRIGHT = 10;
 // defines variables-------------------------------------------------------
 long duration, distance, distanceLEFT, distanceRIGHT;
 int j, k;
+int trial = 0;  //Comment out if causing issues
+int t_time[3];  // ''
 //-------------------------------------------------------------------------
 
 void setup()
@@ -93,10 +95,10 @@ void loop()
   servoLeft.write(180);*/
   delay(560);
 
-   byte trial = 0;  //Comment out if causing issues
-   int t_time[3];  // ''
+
    while ((distanceLEFT < 50) || (distanceRIGHT < 50) || (distanceFront < 256)){
-    WallFollower(distanceFront);
+    RLog(distanceFront, trial);
+    //WallFollower(distanceFront);
     
   }
   
@@ -118,7 +120,7 @@ void SonarSensor(int trigPin,int echoPin)
 }
 
 // Run Logger function (NEW FUNCTION, COMMENT OUT IF ERROR)
-void RLog(uint8_t distanceFront, byte trial, int t_time)
+void RLog(uint8_t distanceFront,int trial)
 {
   bool Start = false;
   bool End = false;
@@ -126,25 +128,25 @@ void RLog(uint8_t distanceFront, byte trial, int t_time)
   servoLeft.writeMicroseconds(1700);      // Move forwards to try enter maze
   servoRight.writeMicroseconds(1300);     
   delay(100);
-  if ((distanceFront > 110) &&  (distanceLEFT < 50) && (distanceRIGHT < 50)){
+  if ((distanceFront > 110) &&  (distanceLEFT < 10) && (distanceRIGHT < 10)){
     Start = true;
   }
   while ((Start = true) && (End = false)){
     runtime += 1;
     WallFollower(distanceFront);
-    if ((distanceFront > 110) &&  (distanceLEFT < 50) && (distanceRIGHT < 50) && (runtime > 2)){
+    if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 2)){
       End = true;
     }
   }
-  if ((End = true) && (trial < 3)){
-    t_time[trial]= runtime;
+  if ((End = true) && (trial < 2)){
+    t_time[trial] = runtime;
     trial += 1;
     delay (10000);
     Start = false;
-    RLog(distanceFront, trial, t_time);
+    RLog(distanceFront, trial);
   }
-  else if ((End = true) && (trial = 3)){
-    t_time[trial]= runtime;
+  else if ((End = true) && (trial = 2)){
+    t_time[trial] = runtime;
   }
 }
 
