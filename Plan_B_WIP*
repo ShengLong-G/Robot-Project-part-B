@@ -216,25 +216,23 @@ void WallFollower(uint8_t distanceFront)
   
   TR(distanceFront);
   GetHeading();
-  if ((distanceFront < 140) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
+  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
     inithead = GetHeading();
     head = GetHeading();
-    while ((head - inithead) < 90){
-      servoLeft.writeMicroseconds(1435);      // L-cw
-      servoRight.writeMicroseconds(1435);     // R-cw
+    while (abs(head - inithead) < 90 or abs(head - inithead) > 270){
+      servoLeft.writeMicroseconds(1500);      // L-cw
+      servoRight.writeMicroseconds(1465);     // R-cw
       head = GetHeading();
       delay(10);
     }
   }
-  else if ((distanceFront < 140) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
+  else if ((distanceFront < 120) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
     inithead = GetHeading();
     head = GetHeading();
-    while ((inithead - head) < 90){
-      servoLeft.writeMicroseconds(1515);      // L-ccw
-      servoRight.writeMicroseconds(1515);     // R-ccw
+    while (abs(inithead - head) < 90 or abs(inithead - head) > 270){
+      servoLeft.writeMicroseconds(1535);      // L-ccw
+      servoRight.writeMicroseconds(1500);     // R-ccw
       head = GetHeading();
-      //Serial.println(head);
-      Serial.println(head);
       delay(10);
     }
   }
