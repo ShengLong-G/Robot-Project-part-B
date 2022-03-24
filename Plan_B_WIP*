@@ -73,6 +73,23 @@ void setup()
   // text display big!
   display.setTextSize(4);
   display.setTextColor(WHITE);
+  
+  #ifndef ESP8266
+  while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
+#endif
+  Serial.begin(9600);
+  Serial.println("Magnetometer Test"); Serial.println("");
+
+  /* Enable auto-gain */
+  mag.enableAutoRange(true);
+
+  /* Initialise the sensor */
+  if(!mag.begin())
+  {
+    /* There was a problem detecting the LSM303 ... check your connections */
+    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
+    while(1);
+  }
 }
 
 void loop()
@@ -177,7 +194,6 @@ float GetHeading(void){
   if (heading < 0) {
     heading = 360 + heading;
   }
-  Serial.println(heading);
   delay(10);
   return heading;
 }
@@ -188,6 +204,7 @@ float GetHeading(void){
 void WallFollower(uint8_t distanceFront)
 {
   float inithead;
+  float head;
   SonarSensor(trigPinLEFT, echoPinLEFT);
   distanceLEFT = distance;
   SonarSensor(trigPinRIGHT, echoPinRIGHT);
@@ -200,20 +217,24 @@ void WallFollower(uint8_t distanceFront)
   TR(distanceFront);
   GetHeading();
   if ((distanceFront < 140) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
-    inithead = heading;
-    while ((heading - inithead) < 90){
+    inithead = GetHeading();
+    head = GetHeading();
+    while ((head - inithead) < 90){
       servoLeft.writeMicroseconds(1435);      // L-cw
       servoRight.writeMicroseconds(1435);     // R-cw
-      GetHeading();
+      head = GetHeading();
       delay(10);
     }
   }
   else if ((distanceFront < 140) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
-    inithead = heading;
-    while ((inithead - heading) < 90){
+    inithead = GetHeading();
+    head = GetHeading();
+    while ((inithead - head) < 90){
       servoLeft.writeMicroseconds(1515);      // L-ccw
       servoRight.writeMicroseconds(1515);     // R-ccw
-      GetHeading();
+      head = GetHeading();
+      //Serial.println(head);
+      Serial.println(head);
       delay(10);
     }
   }
