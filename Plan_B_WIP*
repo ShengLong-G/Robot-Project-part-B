@@ -1,3 +1,4 @@
+
 /*
  * Potentially usful websites
  * https://www.digikey.jp/htmldatasheets/production/1766819/0/0/1/robotics-with-the-boe-bot-student-guide.html
@@ -45,6 +46,8 @@ int j, k;
 int trial = 0;  //Comment out if causing issues
 int t_time[3];  // ''
 float heading;
+int fwdL = 1700;
+int fwdR = 1300;
 //-------------------------------------------------------------------------
 
 // Assign a unique ID to this sensor at the same time 
@@ -113,12 +116,6 @@ void loop()
 
   
 // 1st run follow left wall-----------------------------------------------
-  /*servoRight.attach(servoPin1);  // Attach right signal to pin 12
-  servoLeft.attach(servoPin2);  // Attach right signal to pin 13
-  servoRight.write(0);
-  servoLeft.write(180);*/
-  delay(560);
-
 
    while ((distanceLEFT < 50) || (distanceRIGHT < 50) || (distanceFront < 256)){
     //RLog(distanceFront, trial);
@@ -151,8 +148,9 @@ void RLog(uint8_t distanceFront,int trial)
   bool Start = false;
   bool End = false;
   int runtime = 0;
-  servoLeft.writeMicroseconds(1700);      // Move forwards to try enter maze
-  servoRight.writeMicroseconds(1300);     
+  servoLeft.writeMicroseconds(fwdL);      // Move forwards to try enter maze
+  servoRight.writeMicroseconds(fwdR);     
+  Serial.println("RLog");
   delay(100);
   if ((distanceFront > 10) &&  (distanceLEFT < 20) && (distanceRIGHT < 20)){
     Start = true;
@@ -198,7 +196,16 @@ float GetHeading(void){
   return heading;
 }
 
-
+void Center(void){
+  if (distanceLEFT < 8) { // getting too close to the right wall, adjust left
+    servoLeft.write(100);
+    servoRight.write(90);
+  } 
+  else if (distanceRIGHT < 8) { // getting too close to the left wall, adjust right
+    servoLeft.write(90);
+    servoRight.write(80);
+  }
+}
 
 // Wall following function
 void WallFollower(uint8_t distanceFront)
@@ -210,10 +217,6 @@ void WallFollower(uint8_t distanceFront)
   SonarSensor(trigPinRIGHT, echoPinRIGHT);
   distanceRIGHT = distance;
   distanceFront = vl.readRange();
-  servoLeft.writeMicroseconds(1700);      // L-ccw
-  servoRight.writeMicroseconds(1300);     // R-cw
-  delay(10);
-  
   TR(distanceFront);
   GetHeading();
   if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
@@ -223,6 +226,7 @@ void WallFollower(uint8_t distanceFront)
       servoLeft.writeMicroseconds(1500);      // L-cw
       servoRight.writeMicroseconds(1465);     // R-cw
       head = GetHeading();
+      Center();
       delay(10);
     }
   }
@@ -233,22 +237,18 @@ void WallFollower(uint8_t distanceFront)
       servoLeft.writeMicroseconds(1535);      // L-ccw
       servoRight.writeMicroseconds(1500);     // R-ccw
       head = GetHeading();
+      Center();
       delay(10);
     }
   }
   else if ((distanceFront > 110)){     // Continue straight on
-    servoLeft.writeMicroseconds(1700);      // L-ccw
-    servoRight.writeMicroseconds(1300);     // R-cw
+    servoLeft.writeMicroseconds(fwdL);      // L-ccw
+    servoRight.writeMicroseconds(fwdR);     // R-cw
+    Center();
+    Serial.println("WF 2");
     delay(10);
   }
-  else if (distanceLEFT < 7) { // getting too close to the right wall, adjust left
-    servoLeft.write(100);
-    servoRight.write(90);
-  } 
-  else if (distanceRIGHT < 7) { // getting too close to the left wall, adjust right
-    servoLeft.write(90);
-    servoRight.write(80);
-  }
+  
 }
 
 
