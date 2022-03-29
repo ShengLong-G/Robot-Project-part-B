@@ -46,8 +46,12 @@ int j, k;
 int trial = 0;  //Comment out if causing issues
 int t_time[3];  // ''
 float heading;
-int fwdL = 1700;
-int fwdR = 1300;
+int fwdL = 1600;
+int fwdR = 1400;
+int rtrnL = 1535;
+int rtrnR = 1500;
+int ltrnL = 1500;
+int ltrnR = 1465;
 //-------------------------------------------------------------------------
 
 // Assign a unique ID to this sensor at the same time 
@@ -192,18 +196,29 @@ float GetHeading(void){
   if (heading < 0) {
     heading = 360 + heading;
   }
+  //Serial.println(heading);
   delay(10);
   return heading;
 }
 
-void Center(void){
-  if (distanceLEFT < 8) { // getting too close to the right wall, adjust left
-    servoLeft.write(100);
-    servoRight.write(90);
+void Center(int R, int L){
+  int scale;
+  if (distanceLEFT < 4) { // getting too close to the right wall, adjust left
+    scale = abs(distanceLEFT-4)*1.5;
+    if (distanceLEFT < 3){
+      scale = 4;
+    }
+    servoLeft.writeMicroseconds(L + 100*scale);
+    servoRight.writeMicroseconds(R);
   } 
-  else if (distanceRIGHT < 8) { // getting too close to the left wall, adjust right
-    servoLeft.write(90);
-    servoRight.write(80);
+  
+  if (distanceRIGHT < 4) { // getting too close to the left wall, adjust right
+    scale = abs(distanceRIGHT-4);
+    if (distanceRIGHT < 3){
+      scale = 4;
+    }
+    servoLeft.writeMicroseconds(L);
+    servoRight.writeMicroseconds(R - 100*scale);
   }
 }
 
@@ -217,35 +232,36 @@ void WallFollower(uint8_t distanceFront)
   SonarSensor(trigPinRIGHT, echoPinRIGHT);
   distanceRIGHT = distance;
   distanceFront = vl.readRange();
-  TR(distanceFront);
+  //TR(distanceFront);
   GetHeading();
-  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
+  if ((distanceFront < 110) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
     inithead = GetHeading();
     head = GetHeading();
-    while (abs(head - inithead) < 90 or abs(head - inithead) > 270){
-      servoLeft.writeMicroseconds(1500);      // L-cw
-      servoRight.writeMicroseconds(1465);     // R-cw
+    while (((abs(head - inithead))*2) < 60){
+      servoLeft.writeMicroseconds(ltrnL);      // L-cw
+      servoRight.writeMicroseconds(ltrnR);     // R-cw
       head = GetHeading();
-      Center();
+      Center(ltrnR, ltrnL);
+      Serial.println((abs(head - inithead))*2);
       delay(10);
     }
   }
-  else if ((distanceFront < 120) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
+  else if ((distanceFront < 110) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
     inithead = GetHeading();
     head = GetHeading();
-    while (abs(inithead - head) < 90 or abs(inithead - head) > 270){
-      servoLeft.writeMicroseconds(1535);      // L-ccw
-      servoRight.writeMicroseconds(1500);     // R-ccw
+    while (((abs(inithead - head))*2) < 60){
+      servoLeft.writeMicroseconds(rtrnL);      // L-ccw
+      servoRight.writeMicroseconds(rtrnR);     // R-ccw
       head = GetHeading();
-      Center();
+      Center(rtrnR, rtrnL);
+      Serial.println(abs(inithead - head)*2);
       delay(10);
     }
   }
   else if ((distanceFront > 110)){     // Continue straight on
     servoLeft.writeMicroseconds(fwdL);      // L-ccw
     servoRight.writeMicroseconds(fwdR);     // R-cw
-    Center();
-    Serial.println("WF 2");
+    Center(fwdR, fwdL);
     delay(10);
   }
   
