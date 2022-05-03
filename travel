@@ -1,0 +1,27 @@
+void Travel()  //  start moving
+{
+  int cal = 3;
+  switch(out)
+  {
+    case 0:FWD(); delay(820);   break;
+    case 1: LEFT(); delay(820);  break;
+    case 2: RIGHT(); delay(820);  break;
+  }
+}
+
+FWD(){
+ // Full speed forwards
+ servoLeft.writeMicroseconds(1300);   // Left wheel clockwise
+ servoRight.writeMicroseconds(1700);  // Right wheel counterclockwise 
+}
+
+LEFT(){
+  // Turn left in place
+ servoLeft.writeMicroseconds(1300);   // Left wheel clockwise
+ servoRight.writeMicroseconds(1300);  // Right wheel clockwise
+}
+RIGHT(){
+  // Turn right in place
+ servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
+ servoRight.write Microseconds(1700); // Right wheel counterclockwise
+}
