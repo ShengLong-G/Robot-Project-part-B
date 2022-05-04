@@ -1,0 +1,384 @@
+
+/*
+ * Potentially usful websites
+ * https://www.digikey.jp/htmldatasheets/production/1766819/0/0/1/robotics-with-the-boe-bot-student-guide.html
+ */
+
+
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_VL6180X.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_LSM303_U.h>
+
+// Setup the lidar -------------------------------------------------------
+Adafruit_VL6180X vl = Adafruit_VL6180X();
+
+//-------------------------------------------------------------------------
+
+// Setup the robot Servo---------------------------------------------------
+#include <Servo.h>  
+int servoPin1 = 12; //Right
+int servoPin2 = 13; //Left
+Servo servoLeft;       // Declare left and right servos
+Servo servoRight;
+//-------------------------------------------------------------------------
+
+
+// Setup the Ultrasonic Sensor---------------------------------------------
+// defines pins numbers where sensor is attached
+const int trigPinRIGHT = 5;
+const int echoPinRIGHT = 6;
+const int trigPinLEFT = 9;
+const int echoPinLEFT = 10;
+//-------------------------------------------------------------------------
+
+// defines variables-------------------------------------------------------
+long duration, distance, distanceLEFT, distanceRIGHT;
+int j, k;
+int trial = 0;
+int t_time[3];
+char crossroads = ' ';  
+float heading;
+int fwdL = 1700;
+int fwdR = 1300;
+int rtrnL = 1535;
+int rtrnR = 1500;
+int ltrnL = 1500;
+int ltrnR = 1445;
+
+
+;
+//-------------------------------------------------------------------------
+
+// Assign a unique ID to this sensor at the same time 
+Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
+
+void setup()
+{
+  pinMode(trigPinLEFT, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPinLEFT, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPinRIGHT, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPinRIGHT, INPUT); // Sets the echoPin as an Input
+  Serial.begin(9600); // Starts the serial communication
+  
+  //Serial.println("Adafruit VL6180x test!");
+  if (! vl.begin()) {
+    //Serial.println("Failed to find sensor");
+    while (1);
+  }
+  //Serial.println("Sensor found!");
+
+  
+  #ifndef ESP8266
+  while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
+#endif
+  Serial.begin(9600);
+  //Serial.println("Magnetometer Test"); Serial.println("");
+
+  /* Enable auto-gain */
+  mag.enableAutoRange(true);
+
+  /* Initialise the sensor */
+  if(!mag.begin())
+  {
+    /* There was a problem detecting the LSM303 ... check your connections */
+    //Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
+    while(1);
+  }
+}
+
+void loop()
+{
+  // Initialising the readings from the lidar
+  uint8_t distanceFront = vl.readRange(); // Taking measurements for the front distance
+  uint8_t status = vl.readRangeStatus();  // Taking the status of the lidar, incase of an error
+  Serial.print("Range: "); Serial.println(distanceFront);
+  // Checking for errors from the lidar sensor.
+  ErrorCheck(status);
+
+  // Initialising the readings from Ultrasonic sensors and attaching servos
+  SonarSensor(trigPinLEFT, echoPinLEFT);
+  distanceLEFT = distance;
+  
+  servoRight.attach(servoPin2);  // Attach right signal to pin 12
+  servoLeft.attach(servoPin1);   // Attach left signal to pin 13
+  
+  SonarSensor(trigPinRIGHT, echoPinRIGHT);
+  distanceRIGHT = distance;
+
+// Begin main program-------------------------------------------------------
+  RLog(distanceFront, trial);
+  
+  
+}
+
+// -----------------------------Functions-----------------------------------
+
+// Ultrasonic sensor reading function---------------------------------------
+void SonarSensor(int trigPin,int echoPin)
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration*0.034/2;
+}
+
+
+// Run Logger function (NEW FUNCTION, COMMENT OUT IF ERROR)
+void RLog(uint8_t distanceFront,int trial)
+{
+  Serial.println('1');
+  bool Start = false;
+  bool End = false;
+  int runtime = 0;
+  SonarSensor(trigPinLEFT, echoPinLEFT);
+  distanceLEFT = distance;
+  SonarSensor(trigPinRIGHT, echoPinRIGHT);
+  distanceRIGHT = distance;
+  distanceFront = vl.readRange();
+  switch (trial){
+    case 0:
+      crossroads = 'L';
+      break;
+    case 1:
+      crossroads = 'R';
+      break;
+    case 2:
+      if (t_time[0]<t_time[1]){
+        crossroads = 'L';
+      }
+      else{
+        crossroads = 'R';
+      }
+      break;
+  }
+  
+  servoLeft.writeMicroseconds(fwdL);      // Move forwards to try enter maze
+  servoRight.writeMicroseconds(fwdR);     
+  delay(100);
+  if ((distanceLEFT < 20) or (distanceRIGHT < 20)){
+    Serial.println('a');
+    Start = true;
+  }
+  while ((Start == true) && (End == false)){
+    Serial.println('b');
+    runtime += 1;
+    AriadnesThread(distanceFront, crossroads);
+    SonarSensor(trigPinLEFT, echoPinLEFT);
+    distanceLEFT = distance;
+    SonarSensor(trigPinRIGHT, echoPinRIGHT);
+    distanceRIGHT = distance;
+    distanceFront = vl.readRange();
+    if ((distanceFront > 200) &&  (distanceLEFT > 25) && (distanceRIGHT > 25) && (runtime > 20)){
+      End = true;
+    }
+  }
+  if ((End == true) && (trial < 2)){
+    Serial.println('c');
+    t_time[trial] = runtime;
+    trial += 1;
+    servoLeft.writeMicroseconds(1500);      // Move forwards to try enter maze
+    servoRight.writeMicroseconds(1500);
+    delay (10000);
+    Start = false;
+    RLog(distanceFront, trial);
+  }
+  else if ((End = true) && (trial = 2)){
+    Serial.println('d');
+    t_time[trial] = runtime;
+    delay(1000);
+    exit(0);
+  }
+}
+
+
+// Gets current bearing------------------------------------------------------
+float GetHeading(void){
+   /* Get a new sensor event */
+   Serial.println('2');
+  sensors_event_t event;
+  mag.getEvent(&event);
+  delay(10);
+
+  /* Get a new sensor event */
+  float Pi = 3.14159;
+
+  // Calculate the angle of the vector y,x
+  heading = (atan2(event.magnetic.y, event.magnetic.x) * 180) / Pi;
+
+  // Normalize to 0-360
+  if (heading < 0) {
+    heading = 360 + heading;
+  }
+  //Serial.println(heading);
+  delay(10);
+  return heading;
+}
+
+
+// Positions Theseus in the middle of the path-------------------------------
+void Center(int R, int L){
+  Serial.println('3');
+  int scale;
+  if (distanceLEFT < 4) { // getting too close to the right wall, adjust left
+    scale = abs(distanceLEFT-4)*1.5;
+    if (distanceLEFT < 3){
+      scale = 5;
+    }
+    servoLeft.writeMicroseconds(L + 100*scale);
+    servoRight.writeMicroseconds(R);
+    delay(10);
+  } 
+  
+  if (distanceRIGHT < 4) { // getting too close to the left wall, adjust right
+    scale = abs(distanceRIGHT-4)*1.5;
+    if (distanceRIGHT < 3){
+      scale = 5;
+    }
+    servoLeft.writeMicroseconds(L);
+    servoRight.writeMicroseconds(R - 100*scale);
+    delay(10);
+  }
+}
+
+
+// Main sensor logic---------------------------------------------------------
+void AriadnesThread(uint8_t distanceFront,char crossroads)
+{
+  Serial.println('4');
+  float inithead;
+  float head;
+  SonarSensor(trigPinLEFT, echoPinLEFT);
+  distanceLEFT = distance;
+  SonarSensor(trigPinRIGHT, echoPinRIGHT);
+  distanceRIGHT = distance;
+  distanceFront = vl.readRange();
+  GetHeading();
+  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
+    LTrn(distanceFront);
+  }
+  else if ((distanceFront < 120) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
+    RTrn(distanceFront);
+  }
+  else if ((distanceFront > 120)){     // Continue straight on
+    FWD(distanceFront);
+  }
+  switch (crossroads){
+    case 'L':
+      TL(distanceFront);
+      break;
+    case 'R':
+      TR(distanceFront);
+      break;
+  }
+  
+}
+
+void LTrn(uint8_t distanceFront){
+  while (distanceFront < 140){
+      distanceFront = vl.readRange();
+      SonarSensor(trigPinLEFT, echoPinLEFT);
+      distanceLEFT = distance;
+      SonarSensor(trigPinRIGHT, echoPinRIGHT);
+      distanceRIGHT = distance;
+      servoLeft.writeMicroseconds(ltrnL);      // L-cw
+      servoRight.writeMicroseconds(ltrnR);     // R-cw
+      delay(10);
+    }
+    delay(850);
+}
+
+void RTrn(uint8_t distanceFront){
+  while (distanceFront < 140){
+      distanceFront = vl.readRange();
+      SonarSensor(trigPinLEFT, echoPinLEFT);
+      distanceLEFT = distance;
+      SonarSensor(trigPinRIGHT, echoPinRIGHT);
+      distanceRIGHT = distance;
+      servoLeft.writeMicroseconds(rtrnL);      // L-ccw
+      servoRight.writeMicroseconds(rtrnR);     // R-ccw
+      Serial.println(distanceFront);
+      delay(10);
+    }
+    delay(1100);
+}
+
+void FWD(uint8_t distanceFront){
+  Serial.println('5');
+  distanceFront = vl.readRange();
+  if (180< distanceFront < 250){
+    servoLeft.writeMicroseconds(fwdL - 100);      // L-ccw
+    servoRight.writeMicroseconds(fwdR + 100);     // R-cw
+    Center((fwdR + 100), (fwdL - 100));
+    delay(10);
+  }
+  else if (110 < distanceFront < 179){
+    servoLeft.writeMicroseconds(fwdL - 150);      // L-ccw
+    servoRight.writeMicroseconds(fwdR + 150);     // R-cw
+    Center((fwdR + 150), (fwdL - 150));
+    delay(10);
+  }
+  else{
+    servoLeft.writeMicroseconds(fwdL);      // L-ccw
+    servoRight.writeMicroseconds(fwdR);     // R-cw
+    Center(fwdR, fwdL);
+    delay(10);
+  }
+}
+
+// Turn left at T junction---------------------------------------------------
+void TL(uint8_t distanceFront) {
+  Serial.println('6');
+  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
+    LTrn(distanceFront);
+  }
+}
+
+
+// Turn right at T junction--------------------------------------------------
+void TR(uint8_t distanceFront) {
+  Serial.println('7');
+  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
+    RTrn(distanceFront);
+  }
+}
+
+
+// Lidar error check function------------------------------------------------
+void ErrorCheck(uint8_t status){
+  Serial.println('8');
+  // Some error occurred, print it out!
+  if  ((status >= VL6180X_ERROR_SYSERR_1) && (status <= VL6180X_ERROR_SYSERR_5)) {
+    Serial.println("System error");
+  }
+  else if (status == VL6180X_ERROR_ECEFAIL) {
+    Serial.println("ECE failure");
+  }
+  else if (status == VL6180X_ERROR_NOCONVERGE) {
+    Serial.println("No convergence");
+  }
+  else if (status == VL6180X_ERROR_RANGEIGNORE) {
+    Serial.println("Ignoring range");
+  }
+  else if (status == VL6180X_ERROR_SNR) {
+    Serial.println("Signal/Noise error");
+  }
+  else if (status == VL6180X_ERROR_RAWUFLOW) {
+    Serial.println("Raw reading underflow");
+  }
+  else if (status == VL6180X_ERROR_RAWOFLOW) {
+    Serial.println("Raw reading overflow");
+  }
+  else if (status == VL6180X_ERROR_RANGEUFLOW) {
+    Serial.println("Range reading underflow");
+  }
+  else if (status == VL6180X_ERROR_RANGEOFLOW) {
+    Serial.println("Range reading overflow");
+  }
+  delay(10);
+}
