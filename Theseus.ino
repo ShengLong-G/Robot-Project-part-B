@@ -46,7 +46,10 @@ int fwdR = 1400;
 int rtrnL = 1535;
 int rtrnR = 1500;
 int ltrnL = 1500;
-int ltrnR = 1465;
+int ltrnR = 1455;
+
+
+;
 //-------------------------------------------------------------------------
 
 // Assign a unique ID to this sensor at the same time 
@@ -166,7 +169,12 @@ void RLog(uint8_t distanceFront,int trial)
     Serial.println('b');
     runtime += 1;
     AriadnesThread(distanceFront, crossroads);
-    if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 20)){
+    SonarSensor(trigPinLEFT, echoPinLEFT);
+    distanceLEFT = distance;
+    SonarSensor(trigPinRIGHT, echoPinRIGHT);
+    distanceRIGHT = distance;
+    distanceFront = vl.readRange();
+    if ((distanceFront > 200) &&  (distanceLEFT > 25) && (distanceRIGHT > 25) && (runtime > 70)){
       End = true;
     }
   }
@@ -224,6 +232,7 @@ void Center(int R, int L){
     }
     servoLeft.writeMicroseconds(L + 100*scale);
     servoRight.writeMicroseconds(R);
+    delay(10);
   } 
   
   if (distanceRIGHT < 4) { // getting too close to the left wall, adjust right
@@ -233,6 +242,7 @@ void Center(int R, int L){
     }
     servoLeft.writeMicroseconds(L);
     servoRight.writeMicroseconds(R - 100*scale);
+    delay(10);
   }
 }
 
@@ -257,31 +267,11 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
       break;
   }
   GetHeading();
-  if ((distanceFront < 110) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
-    inithead = GetHeading();
-    head = GetHeading();
-    while (((abs(head - inithead))*2) < 60){
-      servoLeft.writeMicroseconds(ltrnL);      // L-cw
-      servoRight.writeMicroseconds(ltrnR);     // R-cw
-      head = GetHeading();
-      Center(ltrnR, ltrnL);
-      //Serial.println((abs(head - inithead))*2);
-      delay(10);
-    }
+  if ((distanceFront < 120) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
+    LTrn(distanceFront);
   }
-  else if ((distanceFront < 110) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
-    inithead = GetHeading();
-    head = GetHeading();
-    while (distanceFront < 140){
-      distanceFront = vl.readRange();
-      servoLeft.writeMicroseconds(rtrnL);      // L-ccw
-      servoRight.writeMicroseconds(rtrnR);     // R-ccw
-      Serial.println(distanceFront);
-      head = GetHeading();
-      //Serial.println(abs(inithead - head)*2);
-      delay(10);
-    }
-    delay(1000);
+  else if ((distanceFront < 120) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
+    RTrn(distanceFront);
   }
   else if ((distanceFront > 110)){     // Continue straight on
     FWD();
@@ -289,23 +279,49 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
   
 }
 
+void LTrn(uint8_t distanceFront){
+  while (distanceFront < 140){
+      distanceFront = vl.readRange();
+      SonarSensor(trigPinLEFT, echoPinLEFT);
+      distanceLEFT = distance;
+      SonarSensor(trigPinRIGHT, echoPinRIGHT);
+      distanceRIGHT = distance;
+      servoLeft.writeMicroseconds(ltrnL);      // L-cw
+      servoRight.writeMicroseconds(ltrnR);     // R-cw
+      delay(10);
+    }
+    delay(900);
+}
+
+void RTrn(uint8_t distanceFront){
+  while (distanceFront < 140){
+      distanceFront = vl.readRange();
+      SonarSensor(trigPinLEFT, echoPinLEFT);
+      distanceLEFT = distance;
+      SonarSensor(trigPinRIGHT, echoPinRIGHT);
+      distanceRIGHT = distance;
+      servoLeft.writeMicroseconds(rtrnL);      // L-ccw
+      servoRight.writeMicroseconds(rtrnR);     // R-ccw
+      Serial.println(distanceFront);
+      delay(10);
+    }
+    delay(1100);
+}
+
 void FWD(){
   Serial.println('5');
   servoLeft.writeMicroseconds(fwdL);      // L-ccw
-    servoRight.writeMicroseconds(fwdR);     // R-cw
-    Center(fwdR, fwdL);
-    delay(10);
+  servoRight.writeMicroseconds(fwdR);     // R-cw
+  Center(fwdR, fwdL);
+  delay(10);
 
 }
 
 // Turn left at T junction---------------------------------------------------
 void TL(uint8_t distanceFront) {
   Serial.println('6');
-  if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
-    
-      servoLeft.writeMicroseconds(1420);         // Left wheel clockwise
-      servoRight.writeMicroseconds(1420);        // Right wheel anticlockwise
-      delay(580);
+  if ((distanceFront < 80) && (distanceLEFT > 20) && (distanceRIGHT > 20)) {
+    LTrn(distanceFront);
   }
 }
 
@@ -313,11 +329,8 @@ void TL(uint8_t distanceFront) {
 // Turn right at T junction--------------------------------------------------
 void TR(uint8_t distanceFront) {
   Serial.println('7');
-  if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
-    
-      servoRight.writeMicroseconds(1580);         // Right wheel clockwise
-      servoLeft.writeMicroseconds(1580);          // Left wheel anticlockwise
-      delay(580);
+  if ((distanceFront < 80) && (distanceLEFT > 20) && (distanceRIGHT > 20)) {
+    RTrn(distanceFront);
   }
 }
 
