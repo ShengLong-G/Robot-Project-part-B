@@ -37,8 +37,9 @@ const int echoPinLEFT = 10;
 // defines variables-------------------------------------------------------
 long duration, distance, distanceLEFT, distanceRIGHT;
 int j, k;
-int trial = 0;  
-int t_time[3];  
+int trial = 0;
+int t_time[3];
+char crossroads = ' ';  
 float heading;
 int fwdL = 1600;
 int fwdR = 1400;
@@ -66,9 +67,6 @@ void setup()
   }
   Serial.println("Sensor found!");
 
-  // text display big!
-  display.setTextSize(4);
-  display.setTextColor(WHITE);
   
   #ifndef ESP8266
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
@@ -134,6 +132,23 @@ void RLog(uint8_t distanceFront,int trial)
   bool Start = false;
   bool End = false;
   int runtime = 0;
+  switch (trial){
+    case 0:
+      crossroads = 'L';
+      break;
+    case 1:
+      crossroads = 'R';
+      break;
+    case 2:
+      if (t_time[0]>t_time[1]){
+        crossroads = 'L';
+      }
+      else{
+        crossroads = 'R';
+      }
+      break;
+  }
+  
   servoLeft.writeMicroseconds(fwdL);      // Move forwards to try enter maze
   servoRight.writeMicroseconds(fwdR);     
   Serial.println("RLog");
@@ -143,7 +158,7 @@ void RLog(uint8_t distanceFront,int trial)
   }
   while ((Start = true) && (End = false)){
     runtime += 1;
-    AriadnesThread(distanceFront);
+    AriadnesThread(distanceFront,crossroads);
     if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 2)){
       End = true;
     }
@@ -197,7 +212,7 @@ void Center(int R, int L){
   } 
   
   if (distanceRIGHT < 4) { // getting too close to the left wall, adjust right
-    scale = abs(distanceRIGHT-4);
+    scale = abs(distanceRIGHT-4)*1.5;
     if (distanceRIGHT < 3){
       scale = 4;
     }
@@ -208,7 +223,7 @@ void Center(int R, int L){
 
 
 // Main sensor logic---------------------------------------------------------
-void AriadnesThread(uint8_t distanceFront)
+void AriadnesThread(uint8_t distanceFront,char crossroads)
 {
   float inithead;
   float head;
@@ -217,7 +232,14 @@ void AriadnesThread(uint8_t distanceFront)
   SonarSensor(trigPinRIGHT, echoPinRIGHT);
   distanceRIGHT = distance;
   distanceFront = vl.readRange();
-  //TR(distanceFront);
+  switch (crossroads){
+    case 'L':
+      TL(distanceFront);
+      break;
+    case 'R':
+      TR(distanceFront);
+      break;
+  }
   GetHeading();
   if ((distanceFront < 110) && (distanceLEFT > 10) && (distanceRIGHT < 10)){     // Turns Left in a corner
     inithead = GetHeading();
