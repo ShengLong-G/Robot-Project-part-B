@@ -1,0 +1,7 @@
+void 180turn(){
+ for (distanceFront < 5 && distanceLEFT < 10 && DistanceRIGHT < 10) 
+ servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
+ servoRight.write Microseconds(1700); // Right wheel counterclockwise
+ servoLeft.writeMicroseconds(1700);   // Left wheel counterclockwise
+ servoRight.write Microseconds(1700); // Right wheel counterclockwise
+ }
