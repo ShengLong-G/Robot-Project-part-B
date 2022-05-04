@@ -60,19 +60,19 @@ void setup()
   pinMode(echoPinRIGHT, INPUT); // Sets the echoPin as an Input
   Serial.begin(9600); // Starts the serial communication
   
-  Serial.println("Adafruit VL6180x test!");
+  //Serial.println("Adafruit VL6180x test!");
   if (! vl.begin()) {
-    Serial.println("Failed to find sensor");
+    //Serial.println("Failed to find sensor");
     while (1);
   }
-  Serial.println("Sensor found!");
+  //Serial.println("Sensor found!");
 
   
   #ifndef ESP8266
   while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
 #endif
   Serial.begin(9600);
-  Serial.println("Magnetometer Test"); Serial.println("");
+  //Serial.println("Magnetometer Test"); Serial.println("");
 
   /* Enable auto-gain */
   mag.enableAutoRange(true);
@@ -81,7 +81,7 @@ void setup()
   if(!mag.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
+    //Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
     while(1);
   }
 }
@@ -129,9 +129,15 @@ void SonarSensor(int trigPin,int echoPin)
 // Run Logger function (NEW FUNCTION, COMMENT OUT IF ERROR)
 void RLog(uint8_t distanceFront,int trial)
 {
+  Serial.println('1');
   bool Start = false;
   bool End = false;
   int runtime = 0;
+  SonarSensor(trigPinLEFT, echoPinLEFT);
+  distanceLEFT = distance;
+  SonarSensor(trigPinRIGHT, echoPinRIGHT);
+  distanceRIGHT = distance;
+  distanceFront = vl.readRange();
   switch (trial){
     case 0:
       crossroads = 'L';
@@ -151,27 +157,35 @@ void RLog(uint8_t distanceFront,int trial)
   
   servoLeft.writeMicroseconds(fwdL);      // Move forwards to try enter maze
   servoRight.writeMicroseconds(fwdR);     
-  Serial.println("RLog");
   delay(100);
-  if ((distanceFront > 10) &&  (distanceLEFT < 20) && (distanceRIGHT < 20)){
+  if ((distanceLEFT < 20) or (distanceRIGHT < 20)){
+    Serial.println('a');
     Start = true;
   }
-  while ((Start = true) && (End = false)){
+  while ((Start == true) && (End == false)){
+    Serial.println('b');
+    delay(2000);
     runtime += 1;
-    AriadnesThread(distanceFront,crossroads);
-    if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 2)){
+    AriadnesThread(distanceFront, crossroads);
+    if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 20)){
       End = true;
     }
   }
-  if ((End = true) && (trial < 2)){
+  if ((End == true) && (trial < 2)){
+    Serial.println('c');
     t_time[trial] = runtime;
     trial += 1;
+    servoLeft.writeMicroseconds(1500);      // Move forwards to try enter maze
+    servoRight.writeMicroseconds(1500);
     delay (10000);
     Start = false;
     RLog(distanceFront, trial);
   }
   else if ((End = true) && (trial = 2)){
+    Serial.println('d');
     t_time[trial] = runtime;
+    delay(1000);
+    exit(0);
   }
 }
 
@@ -179,6 +193,7 @@ void RLog(uint8_t distanceFront,int trial)
 // Gets current bearing------------------------------------------------------
 float GetHeading(void){
    /* Get a new sensor event */
+   Serial.println('2');
   sensors_event_t event;
   mag.getEvent(&event);
   delay(10);
@@ -201,11 +216,12 @@ float GetHeading(void){
 
 // Positions Theseus in the middle of the path-------------------------------
 void Center(int R, int L){
+  Serial.println('3');
   int scale;
   if (distanceLEFT < 4) { // getting too close to the right wall, adjust left
     scale = abs(distanceLEFT-4)*1.5;
     if (distanceLEFT < 3){
-      scale = 4;
+      scale = 5;
     }
     servoLeft.writeMicroseconds(L + 100*scale);
     servoRight.writeMicroseconds(R);
@@ -214,7 +230,7 @@ void Center(int R, int L){
   if (distanceRIGHT < 4) { // getting too close to the left wall, adjust right
     scale = abs(distanceRIGHT-4)*1.5;
     if (distanceRIGHT < 3){
-      scale = 4;
+      scale = 5;
     }
     servoLeft.writeMicroseconds(L);
     servoRight.writeMicroseconds(R - 100*scale);
@@ -225,6 +241,7 @@ void Center(int R, int L){
 // Main sensor logic---------------------------------------------------------
 void AriadnesThread(uint8_t distanceFront,char crossroads)
 {
+  Serial.println('4');
   float inithead;
   float head;
   SonarSensor(trigPinLEFT, echoPinLEFT);
@@ -249,7 +266,7 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
       servoRight.writeMicroseconds(ltrnR);     // R-cw
       head = GetHeading();
       Center(ltrnR, ltrnL);
-      Serial.println((abs(head - inithead))*2);
+      //Serial.println((abs(head - inithead))*2);
       delay(10);
     }
   }
@@ -257,11 +274,13 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
     inithead = GetHeading();
     head = GetHeading();
     while (((abs(inithead - head))*2) < 60){
+      distanceFront = vl.readRange();
       servoLeft.writeMicroseconds(rtrnL);      // L-ccw
       servoRight.writeMicroseconds(rtrnR);     // R-ccw
+      Serial.println(distanceFront);
       head = GetHeading();
       Center(rtrnR, rtrnL);
-      Serial.println(abs(inithead - head)*2);
+      //Serial.println(abs(inithead - head)*2);
       delay(10);
     }
   }
@@ -272,6 +291,7 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
 }
 
 void FWD(){
+  Serial.println('5');
   servoLeft.writeMicroseconds(fwdL);      // L-ccw
     servoRight.writeMicroseconds(fwdR);     // R-cw
     Center(fwdR, fwdL);
@@ -281,6 +301,7 @@ void FWD(){
 
 // Turn left at T junction---------------------------------------------------
 void TL(uint8_t distanceFront) {
+  Serial.println('6');
   if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
     
       servoLeft.writeMicroseconds(1420);         // Left wheel clockwise
@@ -292,6 +313,7 @@ void TL(uint8_t distanceFront) {
 
 // Turn right at T junction--------------------------------------------------
 void TR(uint8_t distanceFront) {
+  Serial.println('7');
   if ((distanceFront < 80) && (distanceLEFT > 10) && (distanceRIGHT > 10)) {
     
       servoRight.writeMicroseconds(1580);         // Right wheel clockwise
@@ -303,6 +325,7 @@ void TR(uint8_t distanceFront) {
 
 // Lidar error check function------------------------------------------------
 void ErrorCheck(uint8_t status){
+  Serial.println('8');
   // Some error occurred, print it out!
   if  ((status >= VL6180X_ERROR_SYSERR_1) && (status <= VL6180X_ERROR_SYSERR_5)) {
     Serial.println("System error");
