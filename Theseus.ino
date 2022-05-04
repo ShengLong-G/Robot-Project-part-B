@@ -164,7 +164,6 @@ void RLog(uint8_t distanceFront,int trial)
   }
   while ((Start == true) && (End == false)){
     Serial.println('b');
-    delay(2000);
     runtime += 1;
     AriadnesThread(distanceFront, crossroads);
     if ((distanceFront > 110) &&  (distanceLEFT > 20) && (distanceRIGHT > 20) && (runtime > 20)){
@@ -273,16 +272,16 @@ void AriadnesThread(uint8_t distanceFront,char crossroads)
   else if ((distanceFront < 110) && (distanceLEFT < 10) && (distanceRIGHT > 10)){      // Turns right in a corner
     inithead = GetHeading();
     head = GetHeading();
-    while (((abs(inithead - head))*2) < 60){
+    while (distanceFront < 140){
       distanceFront = vl.readRange();
       servoLeft.writeMicroseconds(rtrnL);      // L-ccw
       servoRight.writeMicroseconds(rtrnR);     // R-ccw
       Serial.println(distanceFront);
       head = GetHeading();
-      Center(rtrnR, rtrnL);
       //Serial.println(abs(inithead - head)*2);
       delay(10);
     }
+    delay(1000);
   }
   else if ((distanceFront > 110)){     // Continue straight on
     FWD();
