@@ -200,7 +200,7 @@ void RLog(uint8_t distanceFront,int trial)
 // Gets current bearing------------------------------------------------------
 float GetHeading(void){
    /* Get a new sensor event */
-   Serial.println('2');
+  Serial.println('2');
   sensors_event_t event;
   mag.getEvent(&event);
   delay(10);
@@ -224,6 +224,7 @@ float GetHeading(void){
 // Positions Theseus in the middle of the path-------------------------------
 void Center(int R, int L){
   Serial.println('3');
+  
   int scale;
   if (distanceLEFT < 5) { // getting too close to the right wall, adjust left
     scale = abs(distanceLEFT-5)*1.5;
